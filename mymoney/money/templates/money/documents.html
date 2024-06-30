@@ -1,0 +1,52 @@
+{% extends 'money/base.html' %}
+{% block content %}
+{% load static %}
+
+<a href="{% url 'add_debit_doc' %}">Приход</a>  <a href="{% url 'add_credit_doc' %}">Расход</a> <a href="">Обмен
+    валюты</a>
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Date</th>
+            <th scope="col">Счет/касса</th>
+            <th scope="col">Контрагент</th>
+            <th scope="col">Сумма</th>
+            <th scope="col">Валюта</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for m in document_list %}
+        <tr>
+            <td>
+                {% if m.sum_reg < 0 %}
+                <img src="{% static 'money/images/minus.png' %}" height="15">
+                {% else %}
+                <img src="{% static 'money/images/plus.png' %}" height="15">
+                {% endif %}
+                <a href="{% url 'show_doc' m.id %}">{{m.id}} </a></td>
+            <td>{{m.date|date:"Y-m-d"}}</td>
+
+            <td>{{m.account}}</td>
+            <td>{{m.counterparty}}</td>
+            {% if m.sum_reg < 0 %}
+            <td style="color:red;">{{m.sum_reg}}</td>
+            {% else %}
+            <td style="color:limegreen;">{{m.sum_reg}}</td>
+            {% endif %}
+            <td>{{m.currencie}}</td>
+        </tr>
+        {% endfor %}
+
+
+        </tbody>
+    </table>
+</div>
+</main>
+</div>
+</div>
+
+
+{% endblock%}

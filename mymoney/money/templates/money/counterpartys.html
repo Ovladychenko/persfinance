@@ -1,0 +1,31 @@
+{% extends 'money/base.html' %}
+{% block content %}
+{% load static %}
+
+<a href="{% url 'add_counterparty' %}">Добавить</a>
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+        <tr>
+            <th scope="col">ID</th>
+
+        </tr>
+        </thead>
+        <tbody>
+
+        {% for m in counterparty_list %}
+        <tr>
+        <td><a href="{% url 'show_counterparty' m.id %}">{{m.name}}</a></td>
+        </tr>
+        {% endfor %}
+
+
+        </tbody>
+    </table>
+</div>
+</main>
+</div>
+</div>
+
+
+{% endblock%}

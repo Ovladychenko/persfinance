@@ -1,0 +1,84 @@
+{% extends 'money/base.html' %}
+
+{% block content %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>
+
+<form class="row g-3" action="" method="post">
+    {% csrf_token %}
+  <div class="col-auto">
+    <label  class="visually-hidden">Период с</label>
+    {{ form.date_start }}
+  </div>
+  <div class="col-auto">
+    <label class="visually-hidden">по</label>
+    {{ form.date_end }}
+  </div>
+
+  <div class="col-auto">
+   {{ form.listparam1 }}
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary mb-2">Сформировать</button>
+  </div>
+
+  <canvas id="line-chart" width="50" height="20"></canvas>
+
+</form>
+
+{% autoescape off %}
+<script>
+ const DATA_COUNT = 7;
+ const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+
+
+new Chart(document.getElementById("line-chart"), {
+  type: 'line',
+  data: {
+    labels: {{ dates }} ,
+    datasets: [{
+        data: {{rates}} ,
+
+        borderColor: "#3e95cd",
+        fill: false
+      }
+    ]
+  },
+ options: {
+    responsive: true,
+     legend: {
+      display: false
+    },
+    plugins: {
+      title: {
+        text: 'Chart.js Time Scale',
+        display: true
+      }
+    },
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          // Luxon format string
+          tooltipFormat: 'DD T'
+        },
+        title: {
+          display: true,
+          text: 'Date'
+        }
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'value'
+        }
+      }
+    },
+  },
+});
+</script>
+
+{% endautoescape %}
+{% endblock %}

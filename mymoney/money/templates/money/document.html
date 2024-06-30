@@ -1,0 +1,101 @@
+{% extends 'money/base.html' %}
+{% block content %}
+
+<h5>{{ doc_name }}</h5>
+
+
+<form action="{% url 'show_doc' doc_id %}" method="post">
+    {% csrf_token %}
+
+    <div class="form-group col-md-2">
+        <label for="{{ form.date.id_for_label }}">{{form.date.label}}</label>
+        {{ form.date }}
+    </div>
+
+    <div class="form-group col-md-1">
+        <label for="{{ form.active.id_for_label }}">{{form.active.label}}</label>
+        {{ form.active }}
+    </div>
+
+    <div class="form-group col-md-4">
+        <label for="{{ form.account.id_for_label }}">{{form.account.label}}</label>
+        {{ form.account }}
+    </div>
+
+    <div class="form-group col-md-4">
+        <label for="{{ form.counterparty.id_for_label }}" class="form-label">{{form.counterparty.label}}</label>
+        {{ form.counterparty }}
+    </div>
+
+    <div class="form-group col-md-4">
+        <label for="{{ form.category.id_for_label }}" class="form-label">{{form.category.label}}</label>
+        {{ form.category }}
+    </div>
+
+    <div class="form-group col-md-2">
+        <label for="{{ form.sum.id_for_label }}">{{form.sum.label}}</label>
+        {{ form.sum }}
+    </div>
+
+    <div class="form-group col-md-10">
+        <label for="{{ form.comment.id_for_label }}">{{form.comment.label}}</label>
+        {{ form.comment }}
+    </div>
+
+    <br>
+    <button type="submit" class="btn btn-primary mb-3 ">Сохранить</button>
+    <button type="button" class="btn btn-danger mb-3" data-bs-toggle="modal" data-bs-target="#exampleModalCenter">
+        Удалить
+    </button>
+
+
+</form>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Удалить запись?</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-footer">
+                <form action="{% url 'delete_doc' doc_id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary">Ok</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Удалить запись?</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-footer">
+                <form action="{% url 'delete_doc' doc_id %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary">Ok</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock%}
