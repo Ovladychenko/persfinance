@@ -10,6 +10,8 @@ class DataMixin:
 def get_main_currencie():
     return Currencies.objects.filter(code='980')[:1][0]
 
+def get_currencie_by_code(code_currencie):
+    return Currencies.objects.filter(code=code_currencie)[:1][0]
 
 def get_regulated_sum(date, currencie, sum_to_convert):
     reg_currencie = get_main_currencie()

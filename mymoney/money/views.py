@@ -1,7 +1,10 @@
+from collections import defaultdict
+
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils.datetime_safe import date
 
 from django.views.generic import ListView, CreateView
 
@@ -17,11 +20,22 @@ from .utils import *
 
 def index(request):
     account_sum_list = Document.objects.all() \
-        .values('account__name', 'currencie__name') \
+        .values('account__name', 'currencie__name', 'currencie__code') \
         .annotate(Sum('sum_reg')) \
         .filter(active=True)
+
+    list_sum = list(account_sum_list)
+    total = 0
+    current_date = date.today()
+
+    for item in list_sum:
+        total = total + get_regulated_sum(current_date, get_currencie_by_code(item['currencie__code']),
+                                          item['sum_reg__sum'])
+    total = round(total, 2)
     context = {
-        'data_list': account_sum_list
+        'data_list': account_sum_list,
+        'total': total,
+        'main_currencie': get_main_currencie()
     }
 
     return render(request, 'money/index.html', context)
@@ -454,7 +468,7 @@ def report_credit_category(request):
                 category.append(x.get('category__name'))
                 sums.append(str(-x.get('sum_reg_val__sum')))
                 rs_document_list = Document.objects.all() \
-                    .filter(active=True, type=2, date__range=(start_date, end_date), category=x.get('category__id'))\
+                    .filter(active=True, type=2, date__range=(start_date, end_date), category=x.get('category__id')) \
                     .order_by('-id')
                 for a in rs_document_list:
                     item_document = {
