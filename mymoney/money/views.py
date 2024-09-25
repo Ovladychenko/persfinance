@@ -16,6 +16,7 @@ from django.utils import timezone
 
 from .report_utils import get_colors
 from .utils import *
+from django import template
 
 
 def index(request):
@@ -31,7 +32,7 @@ def index(request):
     for item in list_sum:
         total = total + get_regulated_sum(current_date, get_currencie_by_code(item['currencie__code']),
                                           item['sum_reg__sum'])
-    total = round(total, 2)
+    total = f"{round(total, 1):,}"
     context = {
         'data_list': account_sum_list,
         'total': total,
