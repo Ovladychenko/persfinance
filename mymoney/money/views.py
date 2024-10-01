@@ -27,16 +27,22 @@ def index(request):
 
     list_sum = list(account_sum_list)
     total = 0
+    total_usd = 0
     current_date = date.today()
 
     for item in list_sum:
         total = total + get_regulated_sum(current_date, get_currencie_by_code(item['currencie__code']),
                                           item['sum_reg__sum'])
+
+    total_manage = get_managerial_sum(current_date, get_manage_currencie(), total)
     total = f"{round(total, 1):,}"
+    total_manage = f"{round(total_manage, 1):,}"
     context = {
         'data_list': account_sum_list,
         'total': total,
-        'main_currencie': get_main_currencie()
+        'total_manage': total_manage,
+        'main_currencie': get_main_currencie(),
+        'manage_currencie': get_manage_currencie()
     }
 
     return render(request, 'money/index.html', context)
