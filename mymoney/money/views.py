@@ -440,6 +440,8 @@ def report_dynamic_money(request):
 
     else:
         form = ReportForm()
+        form.fields['date_start'].initial = date.today().replace(day=1)
+        form.fields['date_end'].initial = date.today()
 
     context = {
         'form': form,
@@ -499,6 +501,8 @@ def report_credit_category(request):
 
     else:
         form = ReportForm()
+        form.fields['date_start'].initial = date.today().replace(day=1)
+        form.fields['date_end'].initial = date.today()
 
     context = {
         'form': form,
