@@ -50,6 +50,7 @@ def index(request):
 
 class DocumentList(ListView):
     template_name = 'money/documents.html'
+    paginate_by = 50
 
     def get_queryset(self, **kwargs):
         return Document.objects.all().order_by('-id')
