@@ -195,7 +195,7 @@ def directories(request):
 
 class CounterpartyList(ListView):
     template_name = 'money/counterpartys.html'
-
+    paginate_by = 50
     def get_queryset(self, **kwargs):
         return Counterparty.objects.all()
 
@@ -330,6 +330,7 @@ def show_currencie(request, curr_id):
 
 class CategoryList(ListView):
     template_name = 'money/categorys.html'
+    paginate_by = 50
 
     def get_queryset(self, **kwargs):
         return Category.objects.all()
