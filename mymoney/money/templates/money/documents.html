@@ -13,13 +13,6 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="{% url 'add_credit_doc' %}">Расход</a>
-
-                </li>
-
-                <li class="nav-item">
-                    <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
-                        <span class="navbar-toggler-icon"></span> 11
-                    </button>
                 </li>
 
                 <li class="nav-item dropdown">
@@ -36,25 +29,24 @@
                         <li><a class="dropdown-item" href="#">Something else here</a></li>
                     </ul>
                 </li>
-
             </ul>
-
+               <a data-bs-toggle="offcanvas" href="#offcanvasRight" role="button"
+               aria-controls="offcanvasExample">
+                <img src="{% static 'money/images/list.png' %}">
+            </a>
         </div>
     </div>
 </nav>
 
-
-
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
-  <div class="offcanvas-header">
-    <h5 id="offcanvasRightLabel">Offcanvas right</h5>
-    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body">
-    ...
-  </div>
+    <div class="offcanvas-header">
+        <h5 id="offcanvasRightLabel">Offcanvas right</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        ...
+    </div>
 </div>
-
 
 
 <div class="table-responsive">
