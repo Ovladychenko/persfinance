@@ -126,4 +126,26 @@
 
     </ul>
 </nav>
+
+        <script>
+            const docOffcanvas =
+                document.getElementById('offcanvasRight')
+
+            docOffcanvas.addEventListener('show.bs.offcanvas', () => {
+                //console.log('show instance method fired!');
+            })
+
+            docOffcanvas.addEventListener('shown.bs.offcanvas', () => {
+                //console.log('offcanvas element completely visible!');
+            })
+
+            docOffcanvas.addEventListener('hide.bs.offcanvas', () => {
+                //console.log('hide instance method fired!');
+            })
+
+            docOffcanvas.addEventListener('hidden.bs.offcanvas', () => {
+                //console.log('offcanvas element completely hidden!');
+            })
+        </script>
+
 {% endblock%}

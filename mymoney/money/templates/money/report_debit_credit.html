@@ -1,0 +1,53 @@
+{% extends 'money/base.html' %}
+
+{% block content %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<form class="row g-3" action="" method="post">
+    {% csrf_token %}
+  <div class="col-auto">
+    <label  class="visually-hidden">Период с</label>
+    {{ form.date_start }}
+  </div>
+  <div class="col-auto">
+    <label class="visually-hidden">по</label>
+    {{ form.date_end }}
+  </div>
+
+  <div class="col-auto">
+   {{ form.listparam1 }}
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary mb-2">Сформировать</button>
+  </div>
+
+  <canvas id="line-chart" width="50" height="20"></canvas>
+
+</form>
+
+{% autoescape off %}
+<script>
+
+
+new Chart(document.getElementById("line-chart"), {
+  type: 'line',
+  data: {{ data }},
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Дебит/Кредит '
+      }
+    }
+  },
+});
+</script>
+
+{% endautoescape %}
+{% endblock %}
