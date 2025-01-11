@@ -34,6 +34,7 @@ urlpatterns = [
     path('reports', reports, name='reports'),
     path('report_dynamic_money', report_dynamic_money, name='report_dynamic_money'),
     path('report_credit_category', report_credit_category, name='report_credit_category'),
-    path('report_debit_credit', report_debit_credit, name='report_debit_credit'),
+    path('report_debit_credit_line', report_debit_credit_line, name='report_debit_credit_line'),
+    path('report_debit_credit_bar', report_debit_credit_bar, name='report_debit_credit_bar'),
 
 ]

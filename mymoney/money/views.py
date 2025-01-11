@@ -519,7 +519,7 @@ def report_credit_category(request):
     return render(request, 'money/report_credit_category.html', context)
 
 
-def report_debit_credit(request):
+def report_debit_credit_line(request):
     labels = []
     debit_value = []
     credit_value = []
@@ -593,4 +593,95 @@ def report_debit_credit(request):
                 'datasets': datasets
             }
     }
-    return render(request, 'money/report_debit_credit.html', context)
+    return render(request, 'money/report_debit_credit_line.html', context)
+
+def report_debit_credit_bar(request):
+    labels = []
+    debit_value = []
+    credit_value = []
+
+    if request.method == 'POST':
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            start_date = form.cleaned_data.get('date_start')
+            end_date = form.cleaned_data.get('date_end')
+
+            sql_debit = '''
+            SELECT 
+            date(date, 'start of month') as Date,
+            sum(sum_reg_val) as Sum,
+            max(id) as id
+            FROM 
+            (  SELECT * FROM money_document)
+            where
+            active = true and type = %s
+            and date >= %s and  date <= %s
+             group by date(date, 'start of month')
+             order by date(date, 'start of month')
+            '''
+            periods = get_period_month(start_date, end_date)
+            for period_item in periods:
+                labels.append(get_name_month_by_number(period_item) + ' ' + str(period_item.year))
+
+            debit_data = Document.objects.raw(sql_debit, [1, start_date, end_date])
+            for p in debit_data:
+                date_separate = p.Date.split("-")
+                date_object = date(int(date_separate[0]), int(date_separate[1]), int(date_separate[2]))
+                periods[date_object] = p.Sum
+
+            debit_value = list(periods.values())
+
+            for key in periods:
+                periods[key] = 0
+
+            credit_data = Document.objects.raw(sql_debit, [2, start_date, end_date])
+            for p in credit_data:
+                date_separate = p.Date.split("-")
+                date_object = date(int(date_separate[0]), int(date_separate[1]), int(date_separate[2]))
+                periods[date_object] = -p.Sum
+
+            credit_value = list(periods.values())
+    else:
+        form = ReportForm()
+        form.fields['date_start'].initial = date.today().replace(day=1)
+        form.fields['date_end'].initial = date.today()
+
+    datasets = [
+        {
+            'label': 'Дебет',
+            'data': debit_value,
+            'borderColor': 'blue',
+            'backgroundColor': 'blue',
+        },
+        {
+            'label': 'Кредит',
+            'data': credit_value,
+            'borderColor': 'red',
+            'backgroundColor': 'red',
+        }
+    ]
+
+    datasets = [
+        {
+            'label': 'Дебит',
+            'data': debit_value,
+            'backgroundColor': 'blue',
+            'stack': 'Дебит',
+        },
+        {
+            'label': 'Кредит',
+            'data': credit_value,
+            'backgroundColor': 'red',
+            'stack': 'Кредит',
+        },
+    ]
+
+    context = {
+        'form': form,
+        'data':
+            {
+                'labels': labels,
+                'datasets': datasets
+            }
+    }
+    return render(request, 'money/report_debit_credit_bar.html', context)
