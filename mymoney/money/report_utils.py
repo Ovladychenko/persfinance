@@ -77,3 +77,8 @@ def get_period_month(start_date, end_date):
     for p in periods:
         result[p] = 0
     return result
+
+def get_end_of_month(date_value):
+    last_day_of_month = calendar.monthrange(date_value.year, date_value.month)[1]
+    end_of_month = datetime.datetime(date_value.year, date_value.month, last_day_of_month, 23, 59, 59)
+    return date.replace(end_of_month)

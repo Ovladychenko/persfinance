@@ -547,7 +547,7 @@ def report_debit_credit_line(request):
             for period_item in periods:
                 labels.append(get_name_month_by_number(period_item) + ' ' + str(period_item.year))
 
-            debit_data = Document.objects.raw(sql_debit, [1, start_date, end_date])
+            debit_data = Document.objects.raw(sql_debit, [1, start_date, get_end_of_month(end_date)])
             for p in debit_data:
                 date_separate = p.Date.split("-")
                 date_object = date(int(date_separate[0]), int(date_separate[1]), int(date_separate[2]))
@@ -606,41 +606,21 @@ def report_debit_credit_bar(request):
             start_date = form.cleaned_data.get('date_start')
             end_date = form.cleaned_data.get('date_end')
 
-            sql_debit = '''
-            SELECT 
-            date(date, 'start of month') as Date,
-            sum(sum_reg_val) as Sum,
-            max(id) as id
-            FROM 
-            (  SELECT * FROM money_document)
-            where
-            active = true and type = %s
-            and date >= %s and  date <= %s
-             group by date(date, 'start of month')
-             order by date(date, 'start of month')
-            '''
             periods = get_period_month(start_date, end_date)
             for period_item in periods:
                 labels.append(get_name_month_by_number(period_item) + ' ' + str(period_item.year))
 
-            debit_data = Document.objects.raw(sql_debit, [1, start_date, end_date])
-            for p in debit_data:
-                date_separate = p.Date.split("-")
-                date_object = date(int(date_separate[0]), int(date_separate[1]), int(date_separate[2]))
-                periods[date_object] = p.Sum
+                period_end = get_end_of_month(period_item)
+                rs_data = Document.objects.all() \
+                    .values('counterparty__name', 'counterparty_id') \
+                    .annotate(Sum('sum_reg_val')) \
+                    .filter(active=True, type=2, date__range=(period_item, period_end)) \
+                    .exclude(category=5) \
+                    .order_by('sum_reg_val__sum')
 
-            debit_value = list(periods.values())
+                for x in rs_data:
+                    print(-x.get('sum_reg_val__sum'))
 
-            for key in periods:
-                periods[key] = 0
-
-            credit_data = Document.objects.raw(sql_debit, [2, start_date, end_date])
-            for p in credit_data:
-                date_separate = p.Date.split("-")
-                date_object = date(int(date_separate[0]), int(date_separate[1]), int(date_separate[2]))
-                periods[date_object] = -p.Sum
-
-            credit_value = list(periods.values())
     else:
         form = ReportForm()
         form.fields['date_start'].initial = date.today().replace(day=1)
@@ -667,6 +647,14 @@ def report_debit_credit_bar(request):
             'data': debit_value,
             'backgroundColor': 'blue',
             'stack': 'Дебит',
+
+        },
+        {
+            'label': 'Дебит',
+            'data': credit_value,
+            'backgroundColor': 'green',
+            'stack': 'Дебит',
+
         },
         {
             'label': 'Кредит',
