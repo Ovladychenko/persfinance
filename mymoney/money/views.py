@@ -595,6 +595,7 @@ def report_debit_credit_line(request):
     }
     return render(request, 'money/report_debit_credit_line.html', context)
 
+
 def report_debit_credit_bar(request):
     labels = []
     debit_value = []
@@ -607,39 +608,63 @@ def report_debit_credit_bar(request):
             end_date = form.cleaned_data.get('date_end')
 
             periods = get_period_month(start_date, end_date)
+
             for period_item in periods:
                 labels.append(get_name_month_by_number(period_item) + ' ' + str(period_item.year))
 
+            sql_debit = '''
+            SELECT 
+             date(date, 'start of month') as Date,
+             name,
+             sum(sum_reg_val) as Sum,
+             max(id) as id
+           FROM 
+             ( 
+               SELECT
+                    *,
+                    money_counterparty.name as name 
+                FROM money_document
+                LEFT JOIN money_counterparty
+                ON money_document.counterparty_id = money_counterparty.id)
+            where
+            active = true and type = 1
+             group by date(date, 'start of month'),counterparty_id
+             order by date(date, 'start of month')
+            '''
+
+            credit_data = Document.objects.raw(sql_debit, [2, start_date, end_date])
+            for p in credit_data:
+                date_separate = p.Date.split("-")
+                date_object = date(int(date_separate[0]), int(date_separate[1]), int(date_separate[2]))
+                periods[date_object] = -p.Sum
+
+            credit_value = list(periods.values())
+            # print(labels)
+            # print(periods)
+
+            for key in periods:
+                periods[key] = 0
+
+            for period_item in periods:
                 period_end = get_end_of_month(period_item)
                 rs_data = Document.objects.all() \
                     .values('counterparty__name', 'counterparty_id') \
                     .annotate(Sum('sum_reg_val')) \
-                    .filter(active=True, type=2, date__range=(period_item, period_end)) \
+                    .filter(active=True, type=1, date__range=(period_item, period_end)) \
                     .exclude(category=5) \
                     .order_by('sum_reg_val__sum')
 
-                for x in rs_data:
-                    print(-x.get('sum_reg_val__sum'))
+            #   for x in rs_data:
+            #        print(x.get('counterparty__name'))
+        #        print(x.get('sum_reg_val__sum'))
 
     else:
         form = ReportForm()
         form.fields['date_start'].initial = date.today().replace(day=1)
         form.fields['date_end'].initial = date.today()
 
-    datasets = [
-        {
-            'label': 'Дебет',
-            'data': debit_value,
-            'borderColor': 'blue',
-            'backgroundColor': 'blue',
-        },
-        {
-            'label': 'Кредит',
-            'data': credit_value,
-            'borderColor': 'red',
-            'backgroundColor': 'red',
-        }
-    ]
+    dt = [{'01.2025': [1, 10]}, {'02.2025': [1, 10]}]
+    print(dt)
 
     datasets = [
         {
@@ -651,7 +676,7 @@ def report_debit_credit_bar(request):
         },
         {
             'label': 'Дебит',
-            'data': credit_value,
+            'data': debit_value,
             'backgroundColor': 'green',
             'stack': 'Дебит',
 
