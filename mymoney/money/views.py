@@ -600,6 +600,7 @@ def report_debit_credit_bar(request):
     labels = []
     debit_value = []
     credit_value = []
+    category = []
 
     if request.method == 'POST':
         form = ReportForm(request.POST)
@@ -627,13 +628,46 @@ def report_debit_credit_bar(request):
                 LEFT JOIN money_counterparty
                 ON money_document.counterparty_id = money_counterparty.id)
             where
-            active = true and type = 1
+            active = true and type = 1 and counterparty_id <> 5
+            and date >= %s and  date <= %s
              group by date(date, 'start of month'),counterparty_id
              order by date(date, 'start of month')
             '''
 
-            credit_data = Document.objects.raw(sql_debit, [2, start_date, end_date])
-            for p in credit_data:
+            debit_rs = Document.objects.raw(sql_debit, [start_date, end_date])
+            for p in debit_rs:
+                date_separate = p.Date.split("-")
+                date_object = date(int(date_separate[0]), int(date_separate[1]), int(date_separate[2]))
+
+                debit_item = {'period': date_object, 'name': p.name, 'sum': p.Sum}
+                debit_value.append(debit_item)
+
+                category.append(p.name)
+
+            category_list = list(set(category))
+            print(debit_value)
+            print(category_list)
+
+            for p in debit_value:
+                print(p.get('sum'))
+
+
+            sql_credit = '''
+                 SELECT 
+                 date(date, 'start of month') as Date,
+                 sum(sum_reg_val) as Sum,
+                 max(id) as id
+                 FROM 
+                 (  SELECT * FROM money_document)
+                 where
+                 active = true and type = %s
+                 and date >= %s and  date <= %s
+                  group by date(date, 'start of month')
+                  order by date(date, 'start of month')
+                 '''
+
+            credit_rs = Document.objects.raw(sql_credit, [2, start_date, end_date])
+            for p in credit_rs:
                 date_separate = p.Date.split("-")
                 date_object = date(int(date_separate[0]), int(date_separate[1]), int(date_separate[2]))
                 periods[date_object] = -p.Sum
@@ -663,24 +697,24 @@ def report_debit_credit_bar(request):
         form.fields['date_start'].initial = date.today().replace(day=1)
         form.fields['date_end'].initial = date.today()
 
-    dt = [{'01.2025': [1, 10]}, {'02.2025': [1, 10]}]
-    print(dt)
+    # dt = [{'01.2025': [1, 10]}, {'02.2025': [1, 10]}]
+    # print(dt)
 
     datasets = [
-        {
+          {
             'label': 'Дебит',
             'data': debit_value,
             'backgroundColor': 'blue',
             'stack': 'Дебит',
 
-        },
-        {
-            'label': 'Дебит',
+         },
+         {
+           'label': 'Дебит',
             'data': debit_value,
             'backgroundColor': 'green',
             'stack': 'Дебит',
 
-        },
+         },
         {
             'label': 'Кредит',
             'data': credit_value,
