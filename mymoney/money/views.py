@@ -1,23 +1,15 @@
-from collections import defaultdict
-
 from django.db.models import Sum
-from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.datetime_safe import date
-
 from django.views.generic import ListView, CreateView
 
 from .forms import ExchangeRatesForm, DebitDocForm, CreditDocForm, CounterpartyForm, CurrencieForm, CategoryForm, \
     MoneyAccountForm, ReportForm
 from .models import *
-from datetime import datetime, timedelta
-from django.utils import timezone
-
 from .report_utils import *
 from .utils import *
-
-from django import template
 
 
 def index(request):
@@ -600,7 +592,9 @@ def report_debit_credit_bar(request):
     labels = []
     debit_value = []
     credit_value = []
-    category = []
+    counterparties = []
+    categories = []
+    datasets = []
 
     if request.method == 'POST':
         form = ReportForm(request.POST)
@@ -642,27 +636,42 @@ def report_debit_credit_bar(request):
                 debit_item = {'period': date_object, 'name': p.name, 'sum': p.Sum}
                 debit_value.append(debit_item)
 
-                category.append(p.name)
+                counterparties.append(p.name)
 
-            category_list = list(set(category))
-            print(debit_value)
-            print(category_list)
+            counterparties_list = list(set(counterparties))
 
-            for p in debit_value:
-                print(p.get('sum'))
+            colors_debit = get_colors_debit(len(counterparties_list))
+            step = 0
+            for counterparty_item in counterparties_list:
+                periods_counterparty = dict.fromkeys(periods.copy(), 0)
+                counterparty_data_list = [x for x in debit_value if x['name'] == counterparty_item]
 
+                for record_item in counterparty_data_list:
+                    period = record_item['period']
+                    periods_counterparty[period] = record_item['sum']
+
+                dataset_item = {'label': counterparty_item, 'data': list(periods_counterparty.values()),
+                                'backgroundColor': colors_debit[step], 'stack': 'Дебит1'}
+                datasets.append(dataset_item)
+                step += 1
 
             sql_credit = '''
                  SELECT 
                  date(date, 'start of month') as Date,
                  sum(sum_reg_val) as Sum,
-                 max(id) as id
+                 max(id) as id,
+                 name
                  FROM 
-                 (  SELECT * FROM money_document)
+                 (  SELECT *,
+                 money_category.name as name 
+                  FROM money_document
+                 
+                LEFT JOIN money_category
+                ON money_document.category_id = money_category.id)
                  where
                  active = true and type = %s
                  and date >= %s and  date <= %s
-                  group by date(date, 'start of month')
+                  group by date(date, 'start of month'),name
                   order by date(date, 'start of month')
                  '''
 
@@ -670,59 +679,30 @@ def report_debit_credit_bar(request):
             for p in credit_rs:
                 date_separate = p.Date.split("-")
                 date_object = date(int(date_separate[0]), int(date_separate[1]), int(date_separate[2]))
-                periods[date_object] = -p.Sum
 
-            credit_value = list(periods.values())
-            # print(labels)
-            # print(periods)
+                credit_item = {'period': date_object, 'name': p.name, 'sum': -p.Sum}
+                credit_value.append(credit_item)
+                categories.append(p.name)
 
-            for key in periods:
-                periods[key] = 0
+            categories_list = list(set(categories))
+            colors_credit = get_colors_credit(len(categories_list))
+            step = 0
+            for category_item in categories_list:
+                periods_categories = dict.fromkeys(periods.copy(), 0)
+                counterparty_data_list = [x for x in credit_value if x['name'] == category_item]
 
-            for period_item in periods:
-                period_end = get_end_of_month(period_item)
-                rs_data = Document.objects.all() \
-                    .values('counterparty__name', 'counterparty_id') \
-                    .annotate(Sum('sum_reg_val')) \
-                    .filter(active=True, type=1, date__range=(period_item, period_end)) \
-                    .exclude(category=5) \
-                    .order_by('sum_reg_val__sum')
+                for record_item in counterparty_data_list:
+                    period = record_item['period']
+                    periods_categories[period] = record_item['sum']
 
-            #   for x in rs_data:
-            #        print(x.get('counterparty__name'))
-        #        print(x.get('sum_reg_val__sum'))
-
+                dataset_item = {'label': category_item, 'data': list(periods_categories.values()),
+                                'backgroundColor': colors_credit[step], 'stack': 'Кредит'}
+                datasets.append(dataset_item)
+                step += 1
     else:
         form = ReportForm()
         form.fields['date_start'].initial = date.today().replace(day=1)
         form.fields['date_end'].initial = date.today()
-
-    # dt = [{'01.2025': [1, 10]}, {'02.2025': [1, 10]}]
-    # print(dt)
-
-    datasets = [
-          {
-            'label': 'Дебит',
-            'data': debit_value,
-            'backgroundColor': 'blue',
-            'stack': 'Дебит',
-
-         },
-         {
-           'label': 'Дебит',
-            'data': debit_value,
-            'backgroundColor': 'green',
-            'stack': 'Дебит',
-
-         },
-        {
-            'label': 'Кредит',
-            'data': credit_value,
-            'backgroundColor': 'red',
-            'stack': 'Кредит',
-        },
-    ]
-
     context = {
         'form': form,
         'data':

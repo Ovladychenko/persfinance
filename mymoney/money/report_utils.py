@@ -82,3 +82,37 @@ def get_end_of_month(date_value):
     last_day_of_month = calendar.monthrange(date_value.year, date_value.month)[1]
     end_of_month = datetime.datetime(date_value.year, date_value.month, last_day_of_month, 23, 59, 59)
     return date.replace(end_of_month)
+
+def get_colors_debit(count):
+    colors = [
+        '#006400',
+        '#008000',
+        '#32CD32',
+        '#008000',
+        '#1E90FF',
+        '#4682B4',
+        '#006400',
+        '#008000',
+        '#2E8B57',
+        '#00FF7F',
+        '#32CD32',
+
+    ]
+    return colors[:count]
+
+def get_colors_credit(count):
+    colors = [
+        '#8B0000',
+        '#B22222',
+        '#FF0000',
+        '#DC143C',
+        '#FFA07A',
+        '#E9967A',
+        '#FA8072',
+        '#F08080',
+        '#CD5C5C',
+        '#A52A2A',
+        '#800000',
+
+    ]
+    return colors[:count]

@@ -3,62 +3,93 @@
 {% block content %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
 
 
 <form class="row g-3" action="" method="post">
     {% csrf_token %}
-  <div class="col-auto">
-    <label  class="visually-hidden">Период с</label>
-    {{ form.date_start }}
-  </div>
-  <div class="col-auto">
-    <label class="visually-hidden">по</label>
-    {{ form.date_end }}
-  </div>
+    <div class="col-auto">
+        <label class="visually-hidden">Период с</label>
+        {{ form.date_start }}
+    </div>
+    <div class="col-auto">
+        <label class="visually-hidden">по</label>
+        {{ form.date_end }}
+    </div>
 
-  <div class="col-auto">
-   {{ form.listparam1 }}
-  </div>
-  <div class="col-auto">
-    <button type="submit" class="btn btn-primary mb-2">Сформировать</button>
-  </div>
+    <div class="col-auto">
+        {{ form.listparam1 }}
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary mb-2">Сформировать</button>
+    </div>
 
-  <canvas id="line-chart" width="50" height="20"></canvas>
+    <canvas id="line-chart" width="50" height="20"></canvas>
 
 </form>
 
 {% autoescape off %}
 <script>
 
+    Chart.register(ChartDataLabels);
 
-new Chart(document.getElementById("line-chart"), {
-  type: 'bar',
-  data: {{ data }},
-  options: {
-    plugins: {
-      title: {
-        display: true,
-        text: 'Дебит/Кредит'
+    new Chart(document.getElementById("line-chart"), {
+      plugins: [ChartDataLabels],
+      type: 'bar',
+      data: {{ data }},
+      options: {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Дебит/Кредит'
+          },
+
+        datalabels: {
+            formatter: (value, ctx) => {
+                let datasets = ctx.chart.data.datasets; // Tried `.filter(ds => !ds._meta.hidden);
+                if (ctx.datasetIndex === datasets.length - 1) {
+                    let sum = 0;
+                    datasets.map(dataset => {
+                        sum += dataset.data[ctx.dataIndex];
+                    });
+                    return sum;
+                }
+                else {
+                    return '';
+                }
+            },
+            anchor: 'end',
+            align: 'end'
+        },
+        plotOptions: {
+        bar: {
+          horizontal: true,
+          dataLabels: {
+            position: 'right'
+          }
+        },
       },
-    },
-    responsive: true,
-    interaction: {
-      intersect: false,
-    },
-    scales: {
-      x: {
-        stacked: true,
+
+        },
+        responsive: true,
+        interaction: {
+          intersect: false,
+        },
+        scales: {
+          x: {
+            stacked: true,
+          },
+          y: {
+            stacked: true,
+          }
+        }
       },
-      y: {
-        stacked: true
-      }
-    }
-  }
-});
 
 
 
 
+
+    });
 
 
 </script>
