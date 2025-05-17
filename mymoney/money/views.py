@@ -595,6 +595,8 @@ def report_debit_credit_bar(request):
     counterparties = []
     categories = []
     datasets = []
+    debit_total_value = []
+    credit_total_value = []
 
     if request.method == 'POST':
         form = ReportForm(request.POST)
@@ -603,7 +605,8 @@ def report_debit_credit_bar(request):
             end_date = form.cleaned_data.get('date_end')
 
             periods = get_period_month(start_date, end_date)
-
+            debit_total_value = dict.fromkeys(periods.copy(), 0)
+            credit_total_value = dict.fromkeys(periods.copy(), 0)
             for period_item in periods:
                 labels.append(get_name_month_by_number(period_item) + ' ' + str(period_item.year))
 
@@ -635,8 +638,9 @@ def report_debit_credit_bar(request):
 
                 debit_item = {'period': date_object, 'name': p.name, 'sum': p.Sum}
                 debit_value.append(debit_item)
-
                 counterparties.append(p.name)
+                # for debit total
+                debit_total_value[date_object] += p.Sum
 
             counterparties_list = list(set(counterparties))
 
@@ -684,6 +688,9 @@ def report_debit_credit_bar(request):
                 credit_value.append(credit_item)
                 categories.append(p.name)
 
+                # for debit total
+                credit_total_value[date_object] += -p.Sum
+
             categories_list = list(set(categories))
             colors_credit = get_colors_credit(len(categories_list))
             step = 0
@@ -700,12 +707,29 @@ def report_debit_credit_bar(request):
                 datasets.append(dataset_item)
                 step += 1
 
-
+            credit_total_value = list(credit_total_value.values())
+            debit_total_value = list(debit_total_value.values())
     else:
         form = ReportForm()
         form.fields['date_start'].initial = date.today().replace(day=1)
         form.fields['date_end'].initial = date.today()
 
+    dataset_total = [
+        {
+            'label': 'Дебет',
+            'data': debit_total_value,
+            'borderColor': 'blue',
+            'backgroundColor': 'blue',
+            'stack': 'Дебит1',
+        },
+        {
+            'label': 'Кредит',
+            'data': credit_total_value,
+            'borderColor': 'red',
+            'backgroundColor': 'red',
+            'stack': 'Кредит',
+        }
+    ]
 
     context = {
         'form': form,
@@ -713,6 +737,11 @@ def report_debit_credit_bar(request):
             {
                 'labels': labels,
                 'datasets': datasets
+            },
+        'data_total':
+            {
+                'labels': labels,
+                'datasets': dataset_total
             },
 
     }
