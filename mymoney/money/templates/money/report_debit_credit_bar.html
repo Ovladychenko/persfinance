@@ -26,12 +26,13 @@
 
     <canvas id="line-chart" width="50" height="20"></canvas>
 
+
 </form>
 
 {% autoescape off %}
 <script>
 
-    Chart.register(ChartDataLabels);
+Chart.register(ChartDataLabels);
 
     new Chart(document.getElementById("line-chart"), {
       plugins: [ChartDataLabels],
@@ -46,17 +47,7 @@
 
         datalabels: {
             formatter: (value, ctx) => {
-                let datasets = ctx.chart.data.datasets; // Tried `.filter(ds => !ds._meta.hidden);
-                if (ctx.datasetIndex === datasets.length - 1) {
-                    let sum = 0;
-                    datasets.map(dataset => {
-                        sum += dataset.data[ctx.dataIndex];
-                    });
-                    return sum;
-                }
-                else {
-                    return '';
-                }
+               return ctx.chart.data[ctx.dataIndex];
             },
             anchor: 'end',
             align: 'end'
@@ -84,14 +75,7 @@
           }
         }
       },
-
-
-
-
-
     });
-
-
 </script>
 
 {% endautoescape %}

@@ -699,16 +699,21 @@ def report_debit_credit_bar(request):
                                 'backgroundColor': colors_credit[step], 'stack': 'Кредит'}
                 datasets.append(dataset_item)
                 step += 1
+
+
     else:
         form = ReportForm()
         form.fields['date_start'].initial = date.today().replace(day=1)
         form.fields['date_end'].initial = date.today()
+
+
     context = {
         'form': form,
         'data':
             {
                 'labels': labels,
                 'datasets': datasets
-            }
+            },
+
     }
     return render(request, 'money/report_debit_credit_bar.html', context)
