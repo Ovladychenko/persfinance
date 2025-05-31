@@ -82,3 +82,10 @@ class ExchangeRates(models.Model):
         indexes = [
             models.Index(fields=['-date'])
         ]
+
+class SettingPage(models.Model):
+    name_page = models.CharField(max_length=255)
+    value = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.name_page
